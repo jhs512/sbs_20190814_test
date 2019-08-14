@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.sbs.cuni.dto.Article;
 import com.sbs.cuni.dto.ArticleReply;
 import com.sbs.cuni.dto.Board;
+import com.sbs.cuni.dto.Member;
 import com.sbs.cuni.service.ArticleService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -80,14 +81,20 @@ public class ArticleController {
 	}
 
 	@RequestMapping("/article/add")
-	public String showAdd(long boardId, Model model) {
+	public String showAdd(long boardId, Model model, HttpServletRequest request) {
 		Board board = articleService.getBoard(boardId);
 
 		model.addAttribute("board", board);
 		
-		// 관리자가 아닌 회원이 공지사항 글쓰기에 들어왔을 경우에만
+		boolean hasAPermmision = true;
 		
-		boolean hasAPermmision = false;
+		// 관리자가 아닌 회원이 공지사항 글쓰기에 들어왔을 경우에만 돌려보낸다.
+		
+		Member loginedMember = (Member)request.getAttribute("loginedMember");
+		
+		if ( boardId == 1 && loginedMember.getPermissionLevel() == 0 ) {
+			hasAPermmision = false;
+		}
 		
 		if ( hasAPermmision == false ) {
 			model.addAttribute("historyBack", true);
